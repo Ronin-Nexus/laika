@@ -22,7 +22,33 @@ export default function EVM() {
     const fetchChains = async () => {
       const res = await fetch('https://chainid.network/chains.json')
       const chains = await res.json()
-      setChains(chains)
+      setChains([
+        {
+          name: 'Ronin Mainnet',
+          title: 'Ronin mainnet',
+          chain: 'Ronin',
+          rpc: ['https://api.roninchain.com/rpc'],
+          faucets: [],
+          nativeCurrency: {
+            name: 'RON',
+            symbol: 'RON',
+            decimals: 18,
+          },
+          infoURL: 'https://app.roninchain.com',
+          shortName: 'Ronin',
+          chainId: 2020,
+          networkId: 2020,
+          slip44: 1,
+          explorers: [
+            {
+              name: 'Ronin mainnet explorer',
+              url: 'https://app.roninchain.com',
+              standard: 'none',
+            },
+          ],
+        },
+        ...chains,
+      ])
     }
     fetchChains()
   }, [setChains])
