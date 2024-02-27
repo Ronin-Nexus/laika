@@ -56,6 +56,30 @@ export default function EVM() {
             },
           ],
         },
+        {
+          name: 'Ronin Testnet',
+          title: 'Ronin testnet',
+          chain: 'Saigon Testnet',
+          rpc: ['https://saigon-testnet.roninchain.com/rpc'],
+          faucets: ['https://faucet.roninchain.com/'],
+          nativeCurrency: {
+            name: 'RON',
+            symbol: 'RON',
+            decimals: 18,
+          },
+          infoURL: 'https://saigon-app.roninchain.com',
+          shortName: 'Ronin',
+          chainId: 2021,
+          networkId: 2021,
+          slip44: 1,
+          explorers: [
+            {
+              name: 'Ronin testnet explorer',
+              url: 'https://saigon-app.roninchain.com',
+              standard: 'none',
+            },
+          ],
+        },
         ...chains,
       ])
     }
