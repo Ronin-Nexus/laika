@@ -6,7 +6,9 @@ import { Toaster } from '@/components/ui/toaster'
 
 import EVM from './EVM'
 import Root from './Root'
+import * as vmCollections from '@/../public/ronin-collections.json'
 
+localStorage.setItem('evmCollections', JSON.stringify(vmCollections))
 const router = createBrowserRouter([
   {
     path: '/',
