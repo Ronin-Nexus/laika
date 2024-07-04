@@ -1,0 +1,70 @@
+name: Docker build and push to Artifact Registry
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  PROJECT_ID: wow3-pro
+  REPO: wow3
+  REGISTRY: us-east1-docker.pkg.dev
+  WORKLOAD_IDENTITY_PROVIDER: projects/274231265/locations/global/workloadIdentityPools/github/providers/wow3-github
+  SERVICE_ACCOUNT: wow3-github-runner@wow3-pro.iam.gserviceaccount.com
+
+jobs:
+  build_and_push:
+    name: Docker login, build, and push
+    runs-on: wow3-runner-gcp
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v4
+      - name: Get repository name
+        run: echo "REPOSITORY_NAME=${GITHUB_REPOSITORY#*/}" >> $GITHUB_ENV
+      - id: meta
+        name: Docker Meta
+        uses: docker/metadata-action@v5
+        env:
+          DOCKER_METADATA_PR_HEAD_SHA: "true"
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.REPOSITORY_NAME }}
+          tags: |
+            type=ref,suffix=-{{sha}},event=branch
+            type=ref,suffix=-{{sha}},event=pr
+            type=ref,suffix=-{{sha}},event=tag
+            type=semver,event=tag,pattern={{raw}}
+
+      - id: "auth"
+        name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v2"
+        with:
+          token_format: access_token
+          project_id: "${{ env.PROJECT_ID }}"
+          workload_identity_provider: "${{ env.WORKLOAD_IDENTITY_PROVIDER }}"
+          service_account: "${{ env.SERVICE_ACCOUNT }}"
+
+      - uses: "docker/login-action@v3"
+        name: "Docker login"
+        with:
+          registry: "${{ env.REGISTRY }}"
+          username: "oauth2accesstoken"
+          password: "${{ steps.auth.outputs.access_token }}"
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          no-cache: true
+          build-args: |
+            CACHE_DATE=$(date)
